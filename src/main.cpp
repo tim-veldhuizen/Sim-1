@@ -2,12 +2,26 @@
 
 
                                           6 
+
+// Turn on motor A & B
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
+    delay(2000);
+
+    // Now change motor directions
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
 */ 
 #include <Arduino.h>
 #include <servo.h>
 #include <Stepper.h>
+#include <Adafruit_VL53L0X.h>
 
-
+Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 int rechtsom = 0;
 int linksom = 0;
 int stopcount = 0;
@@ -19,6 +33,7 @@ int stopcount = 0;
 #define DS5 30
 #define DS6 32
 
+int StepperBaseRPM = 0;
 int bl = 1;
 int wh = 0;
 int start = 0;
@@ -32,17 +47,43 @@ Stepper StepperHead = Stepper(200, 25, 27 , 29, 31); //nog random digital pins g
 Servo Gripper;
 Servo RopeServo;
 
-
+VL53L0X_RangingMeasurementData_t measure;
 //pins voor de servo's
 #define Gripperpin 3 //de pins moeten nog gekozen worden
 #define RopeServoPin 4 //de pins moeten nog gekozen worden
+
+void stop() {
+  Serial.println("auto stopt");
+  digitalWrite(9, HIGH);
+  digitalWrite(8, HIGH);
+}
+
+void homeposition(){
+Serial.println("Staat in homeposition");
+// Servo staat nog op random graden
+Gripper.write(90);
+RopeServo.write(90);
+StepperBase.step(0);
+StepperHead.step(0); 
+}
+
+
+void statesensoren(){
+    s6 = digitalRead(DS6);
+    s5 = digitalRead(DS5);
+    s4 = digitalRead(DS4);
+    s3 = digitalRead(DS3);
+    s2 = digitalRead(DS2);
+    s1 = digitalRead(DS1);
+}
+
 
 //start functie hij begint niet zonder dat dit waar is 
 void Start(){
   homeposition();
   stop();
   while(start == 0){
-statesensoren();
+    statesensoren();
     if ((s2 == bl) && (s3 == bl) && (s1 == bl) && (s4 == wh) && (s5 == wh)){
       start = 1;
     }
@@ -54,29 +95,25 @@ statesensoren();
   }
 }
 
-void homeposition() {
-Serial.println("Staat in homeposition");
-// Servo staat nog op random graden
-Gripper.write(90);
-RopeServo.write(90);
-StepperBase.step(0);
-StepperHead.step(0); 
-}
+
 
 void scandiabolo(){
+ if(measure.RangeMilliMeter <= 10){ //het getal 10 is random gekozen
+ Serial.print("Distance (mm): "); Serial.println(measure.RangeMilliMeter);
 
+ }
 }
 
+void draaiRscan(){
+  for(int i; i = 0;){
+    i++;
+  StepperHead.step(i +1);
+  StepperBase.setSpeed(StepperBaseRPM);
+  }
+}
 void gamestrategie(){
 homeposition();
 scandiabolo();
-
-}
-
-void stop() {
-  Serial.println("auto stopt");
-  digitalWrite(9, HIGH);
-  digitalWrite(8, HIGH);
 }
 
 void straight() {
@@ -239,14 +276,6 @@ void checklinksaf(){
   }
   }
 
-void statesensoren(){
-    s6 = digitalRead(DS6);
-    s5 = digitalRead(DS5);
-    s4 = digitalRead(DS4);
-    s3 = digitalRead(DS3);
-    s2 = digitalRead(DS2);
-    s1 = digitalRead(DS1);
-}
 
  void countstop(){
    if(stopcount == 1){
@@ -271,12 +300,17 @@ while (stopcount == 1)
 }
 
 void setup() {
+
+  // wait until serial port opens for native USB devices
+  while (! Serial) {
+    delay(1);
+  }
   //Setup Channel A
-  pinMode(12, OUTPUT); //Initiates Motor Channel A pin
-  pinMode(9, OUTPUT); //Initiates Brake Channel A pin
+  pinMode(14, OUTPUT); //Initiates Motor Channel A pin
+  pinMode(15, OUTPUT); //Initiates Brake Channel A pin
 
   //Setup Channel B
-  pinMode(13, OUTPUT); //Initiates Motor Channel A pi
+  pinMode(11, OUTPUT); //Initiates Motor Channel A pi
   pinMode(8, OUTPUT);  //Initiates Brake Channel A pin
 
   //Setup sensor
