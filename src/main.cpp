@@ -25,6 +25,7 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 int rechtsom = 0;
 int linksom = 0;
 int stopcount = 0;
+int diabolo = 0;
 
 #define DS1 22
 #define DS2 24
@@ -33,12 +34,12 @@ int stopcount = 0;
 #define DS5 30
 #define DS6 32
 
-int StepperBaseRPM = 0;
+int StepperBaseRPM = 5;
 int bl = 1;
 int wh = 0;
 int start = 0;
 int s1, s2, s3, s4, s5, s6;
-
+int rechtsomdiabol = 0;
 // de end stepper
 Stepper StepperBase = Stepper(200, 45 ,47 ,49 ,51); //nog random digital pins gezet
 Stepper StepperHead = Stepper(200, 25, 27 , 29, 31); //nog random digital pins gezet
@@ -100,20 +101,29 @@ void Start(){
 void scandiabolo(){
  if(measure.RangeMilliMeter <= 10){ //het getal 10 is random gekozen
  Serial.print("Distance (mm): "); Serial.println(measure.RangeMilliMeter);
-
+ 
  }
 }
 
 void draaiRscan(){
-  for(int i; i = 0;){
-    i++;
-  StepperHead.step(i +1);
-  StepperBase.setSpeed(StepperBaseRPM);
+  
+  for(int i; i = 0; i <= 120){
+  StepperBase.step(i);
+  measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter <= 10){
+    rechtsomdiabol = i; //rechtsomdiabol wordt gebruikt om data op te slaan
+    i = 120; //naar 120 om uit de loop te komen
+    StepperBase.setSpeed(0);
+  }
+  delay(50);
   }
 }
+void scanhighlow(){
+
+}
 void gamestrategie(){
-homeposition();
-scandiabolo();
+draaiRscan();
+
 }
 
 void straight() {
