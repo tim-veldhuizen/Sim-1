@@ -26,8 +26,7 @@ int rechtsom = 0;
 int linksom = 0;
 int stopcount = 0;
 int diabolo = 0;
-int ééngem = 0;
-int tweegem = 0;
+
 #define DS1 22
 #define DS2 24
 #define DS3 26
@@ -35,7 +34,6 @@ int tweegem = 0;
 #define DS5 30
 #define DS6 32
 
-int scanR = 0;
 int StepperBaseRPM = 5;
 int bl = 1;
 int wh = 0;
@@ -54,6 +52,20 @@ VL53L0X_RangingMeasurementData_t measure;
 //pins voor de servo's
 #define Gripperpin 3 //de pins moeten nog gekozen worden
 #define RopeServoPin 4 //de pins moeten nog gekozen worden
+
+int zone[24] = {0, 8, 16, 25, 33, 41, 50, 58, 66, 75, 83, 91, 100, 108, 116, 125, 133, 142, 150, 158, 166, 175, 183, 191};
+
+void steps(){
+  int i;
+  while(){}
+  StepperBase.step(zone[i]);
+  measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter <= 10){
+    rechtsomdiabol = i; //rechtsomdiabol wordt gebruikt om data op te slaan
+    i = 120; //naar 120 om uit de loop te komen
+    
+  }
+}
 
 void stop() {
   Serial.println("auto stopt");
@@ -106,19 +118,10 @@ void scandiabolo(){
  
  }
 }
+
 void draaiRscan(){
-  while(scanR == 0){
-
-    measure.RangeMilliMeter;
-  if(measure.RangeMilliMeter > 10){
-    
-  }
-  }
-}
-
-void draaiRscant(){
   
-  for(int i = 0; i <= 120 ;i++){
+  for(int i; i = 0; i <= 120){
   StepperBase.step(i);
   measure.RangeMilliMeter;
   if(measure.RangeMilliMeter <= 10){
@@ -130,27 +133,6 @@ void draaiRscant(){
   }
 }
 void scanhighlow(){
-for(int x = 0; x <= 1200 ;x++){
-  StepperHead.step(x);
-  measure.RangeMilliMeter;
-  if(measure.RangeMilliMeter <= 8){ //getal random gekozen
-    ééngem = x; //ééngem wordt gebruikt om data op te slaan
-    x = 1200; //naar 120 om uit de loop te komen
-    StepperHead.setSpeed(0);
-  }
-  delay(10);
-}
-StepperHead.step(ééngem);
-for(int x = 0; x >= -1200 ;x--){
-  StepperHead.step(x);
-  measure.RangeMilliMeter;
-  if(measure.RangeMilliMeter <= 8){ //getal random gekozen
-    tweegem = x; //tweegem wordt gebruikt om data op te slaan
-    x = -1200; //naar 120 om uit de loop te komen
-    StepperHead.setSpeed(0);
-  }
-  delay(10);
-}
 
 }
 void gamestrategie(){
