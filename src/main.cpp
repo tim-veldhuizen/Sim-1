@@ -26,7 +26,8 @@ int rechtsom = 0;
 int linksom = 0;
 int stopcount = 0;
 int diabolo = 0;
-
+int ééngem = 0;
+int tweegem = 0;
 #define DS1 22
 #define DS2 24
 #define DS3 26
@@ -34,6 +35,7 @@ int diabolo = 0;
 #define DS5 30
 #define DS6 32
 
+int scanR = 0;
 int StepperBaseRPM = 5;
 int bl = 1;
 int wh = 0;
@@ -104,10 +106,19 @@ void scandiabolo(){
  
  }
 }
-
 void draaiRscan(){
+  while(scanR == 0){
+
+    measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter > 10){
+    
+  }
+  }
+}
+
+void draaiRscant(){
   
-  for(int i; i = 0; i <= 120){
+  for(int i = 0; i <= 120 ;i++){
   StepperBase.step(i);
   measure.RangeMilliMeter;
   if(measure.RangeMilliMeter <= 10){
@@ -119,6 +130,27 @@ void draaiRscan(){
   }
 }
 void scanhighlow(){
+for(int x = 0; x <= 1200 ;x++){
+  StepperHead.step(x);
+  measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter <= 8){ //getal random gekozen
+    ééngem = x; //ééngem wordt gebruikt om data op te slaan
+    x = 1200; //naar 120 om uit de loop te komen
+    StepperHead.setSpeed(0);
+  }
+  delay(10);
+}
+StepperHead.step(ééngem);
+for(int x = 0; x >= -1200 ;x--){
+  StepperHead.step(x);
+  measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter <= 8){ //getal random gekozen
+    tweegem = x; //tweegem wordt gebruikt om data op te slaan
+    x = -1200; //naar 120 om uit de loop te komen
+    StepperHead.setSpeed(0);
+  }
+  delay(10);
+}
 
 }
 void gamestrategie(){
