@@ -26,7 +26,7 @@ int rechtsom = 0;
 int linksom = 0;
 int stopcount = 0;
 int diabolo = 0;
-
+int i = 0;
 #define DS1 22
 #define DS2 24
 #define DS3 26
@@ -39,7 +39,20 @@ int bl = 1;
 int wh = 0;
 int start = 0;
 int s1, s2, s3, s4, s5, s6;
-int rechtsomdiabol = 0;
+int countR = 0;
+int rechtsomdiabol = 0; //Rechtsomdiabol is om de steps van de stepper te onthouden
+int rechtsomdiaboltot = 0;
+int hoogtediabol = 10; //Hoogte diabolo kan nog veranderen
+int StepperBasedelay = 160; //Delay is nog niet goed bepaald
+int StepperHeaddelay = 750; //Delay is nog niet goed bepaald
+int StepperBaseRPM = 55; //RPM is nog niet bepaald
+int StepperHeadRPM = 20; //RPM is nog niet bepaald
+int roulettediabol = 9;
+int roulettediabolL = 0;
+int roulettediabolR = 0;
+int roulettetot = 0;
+int readdiabolo = 0;
+int countL = 0;
 // de end stepper
 Stepper StepperBase = Stepper(200, 45 ,47 ,49 ,51); //nog random digital pins gezet
 Stepper StepperHead = Stepper(200, 25, 27 , 29, 31); //nog random digital pins gezet
@@ -47,23 +60,102 @@ Stepper StepperHead = Stepper(200, 25, 27 , 29, 31); //nog random digital pins g
 //servo
 Servo Gripper;
 Servo RopeServo;
+int servohoog = 90;
+int servolaag = 0;
+int servovast = 90;
+int servolos = 0;
 
 VL53L0X_RangingMeasurementData_t measure;
 //pins voor de servo's
 #define Gripperpin 3 //de pins moeten nog gekozen worden
 #define RopeServoPin 4 //de pins moeten nog gekozen worden
 
-int zone[24] = {0, 8, 16, 25, 33, 41, 50, 58, 66, 75, 83, 91, 100, 108, 116, 125, 133, 142, 150, 158, 166, 175, 183, 191};
+int zone[11] = {0, 183, 368, 552, 732, 916, 1100, 1284, 1468, 1652, 1832};
+int zone2[11] = {2568, 2752, 2932, 3116, 3300, 3484, 3668, 3852, 4032, 4216, 4400};
 
-void steps(){
-  int i;
-  while(){}
+void Rsteps(){
+  while(countR == 0){}
   StepperBase.step(zone[i]);
+  i++;
+  // shutdown pins moet nog worden toegepast
   measure.RangeMilliMeter;
-  if(measure.RangeMilliMeter <= 10){
-    rechtsomdiabol = i; //rechtsomdiabol wordt gebruikt om data op te slaan
-    i = 120; //naar 120 om uit de loop te komen
-    
+  if(measure.RangeMilliMeter <= hoogtediabol){
+    rechtsomdiabol = zone[i]; //rechtsomdiabol wordt gebruikt om data op te slaan
+    Serial.println("Ziet diabol recht in de draai beweging");
+    countR = 1;
+  }
+  delay(5);
+  // shutdown pins moet nog worden toegepast
+  measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter <= hoogtediabol){
+    rechtsomdiabol = zone[i]; //rechtsomdiabol wordt gebruikt om data op te slaan
+     Serial.println("Ziet diabol rechts in de draai beweging");
+    countR = 1;
+  }
+  delay(5);
+  // shutdown pins moet nog worden toegepast
+  measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter <= hoogtediabol){
+    rechtsomdiabol = zone[i]; //rechtsomdiabol wordt gebruikt om data op te slaan
+     Serial.println("Ziet diabol rechts in de draai beweging");
+    countR = 1;
+  }
+}
+
+void Lsteps(){
+  while(countL == 0){}
+  StepperBase.step(zone2[i]);
+  i++;
+  // shutdown pins moet nog worden toegepast
+  measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter <= hoogtediabol){
+    rechtsomdiabol = zone2[i]; //rechtsomdiabol wordt gebruikt om data op te slaan
+    Serial.println("Ziet diabol links in de draai beweging");
+    countL = 1;
+  }
+  delay(5);
+  // shutdown pins moet nog worden toegepast
+  measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter <= hoogtediabol){
+    rechtsomdiabol = zone2[i]; //rechtsomdiabol wordt gebruikt om data op te slaan
+     Serial.println("Ziet diabol links in de draai beweging");
+    countL = 1;
+  }
+  delay(5);
+  // shutdown pins moet nog worden toegepast
+  measure.RangeMilliMeter;
+  if(measure.RangeMilliMeter <= hoogtediabol){
+    rechtsomdiabol = zone2[i]; //rechtsomdiabol wordt gebruikt om data op te slaan
+     Serial.println("Ziet diabol links in de draai beweging");
+    countL = 1;
+  }
+}
+
+void scandiaboloL( int i = 0){
+  while(readdiabolo == 0){
+    i=i+200; //steps gedeelt door 4 door cnc shield 200/4=50
+    StepperHead.step(i);
+    delay(StepperHeaddelay);
+    measure.RangeMilliMeter; //shutdown pins moeten nog worden toegevoegd
+    if(measure.RangeMilliMeter >= roulettediabol){
+    roulettediabolL = i;
+    readdiabolo = 1;
+    }
+  }
+}
+
+void scandiaboloR( int i = 0){
+  while(readdiabolo == 0){
+    StepperHead.step(0);
+    delay(1000);
+    i=i-200; //steps gedeelt door 4 door cnc shield -200/4=-50
+    StepperHead.step(i);
+    delay(StepperHeaddelay);
+    measure.RangeMilliMeter; //shutdown pins moeten nog worden toegevoegd
+    if(measure.RangeMilliMeter >= roulettediabol){
+    roulettediabolR = i;
+    readdiabolo = 1;
+    }
   }
 }
 
@@ -76,8 +168,8 @@ void stop() {
 void homeposition(){
 Serial.println("Staat in homeposition");
 // Servo staat nog op random graden
-Gripper.write(90);
-RopeServo.write(90);
+Gripper.write(servolos);
+RopeServo.write(servohoog);
 StepperBase.step(0);
 StepperHead.step(0); 
 }
@@ -119,25 +211,26 @@ void scandiabolo(){
  }
 }
 
-void draaiRscan(){
-  
-  for(int i; i = 0; i <= 120){
-  StepperBase.step(i);
-  measure.RangeMilliMeter;
-  if(measure.RangeMilliMeter <= 10){
-    rechtsomdiabol = i; //rechtsomdiabol wordt gebruikt om data op te slaan
-    i = 120; //naar 120 om uit de loop te komen
-    StepperBase.setSpeed(0);
-  }
-  delay(50);
-  }
-}
-void scanhighlow(){
 
-}
+
 void gamestrategie(){
-draaiRscan();
-
+  homeposition();
+  Rsteps();
+  scandiaboloL();
+  scandiaboloR();
+  roulettetot= roulettediabolL - roulettediabolR;
+  StepperHead.step(roulettetot);
+  delay(1000);
+  RopeServo.write(servolaag); //random getal
+  Gripper.write(servovast); //random getal
+  RopeServo.write(servohoog); //random getal
+  StepperHead.step(0);
+  rechtsomdiaboltot = rechtsomdiabol - 2200; //staat nu 180 gedraaid van waar de diabolo eerst stond
+  StepperBase.step(rechtsomdiaboltot);
+  delay(2000);
+  homeposition();
+  delay(2000); //zodat de diabolo in positie komt
+  delay(3000); //moet volgends de reader
 }
 
 void straight() {
@@ -324,7 +417,8 @@ while (stopcount == 1)
 }
 
 void setup() {
-
+  
+  Serial.begin(9600); //Starts the serial monitor
   // wait until serial port opens for native USB devices
   while (! Serial) {
     delay(1);
@@ -337,6 +431,10 @@ void setup() {
   pinMode(11, OUTPUT); //Initiates Motor Channel A pi
   pinMode(8, OUTPUT);  //Initiates Brake Channel A pin
 
+  //servo pins
+  Gripper.attach(Gripperpin);
+  RopeServo.attach(RopeServoPin);
+
   //Setup sensor
   pinMode(DS1, INPUT);
   pinMode(DS2, INPUT);
@@ -345,7 +443,8 @@ void setup() {
   pinMode(DS5, INPUT);
   pinMode(DS6, INPUT);
   
-  Serial.begin(9600); //Starts the serial monitor
+  StepperBase.setSpeed(StepperBaseRPM);
+  StepperHead.setSpeed(StepperHeadRPM);
 
 Start();
 }
